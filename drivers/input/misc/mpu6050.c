@@ -3175,8 +3175,6 @@ static int mpu6050_probe(struct i2c_client *client,
 			gpio_is_valid(sensor->pdata->gpio_int))
 		sensor->accel_cdev.max_delay = MPU6050_ACCEL_INT_MAX_DELAY;
 
-	ret = sensors_classdev_register(&sensor->accel_dev->dev,
-			&sensor->accel_cdev);
 	if (ret) {
 		dev_err(&client->dev,
 			"create accel class device file failed!\n");
@@ -3195,27 +3193,19 @@ static int mpu6050_probe(struct i2c_client *client,
 			gpio_is_valid(sensor->pdata->gpio_int))
 		sensor->gyro_cdev.max_delay = MPU6050_GYRO_INT_MAX_DELAY;
 
-	ret = sensors_classdev_register(&sensor->gyro_dev->dev,
-			&sensor->gyro_cdev);
 	if (ret) {
 		dev_err(&client->dev,
 			"create accel class device file failed!\n");
 		ret = -EINVAL;
-		goto err_remove_accel_cdev;
 	}
 
 	ret = mpu6050_power_ctl(sensor, false);
 	if (ret) {
 		dev_err(&client->dev,
 				"Power off mpu6050 failed\n");
-		goto err_remove_gyro_cdev;
 	}
 
 	return 0;
-err_remove_gyro_cdev:
-	sensors_classdev_unregister(&sensor->gyro_cdev);
-err_remove_accel_cdev:
-	 sensors_classdev_unregister(&sensor->accel_cdev);
 err_remove_gyro_sysfs:
 	remove_accel_sysfs_interfaces(&sensor->gyro_dev->dev);
 err_remove_accel_sysfs:
@@ -3255,8 +3245,6 @@ static int mpu6050_remove(struct i2c_client *client)
 {
 	struct mpu6050_sensor *sensor = i2c_get_clientdata(client);
 
-	sensors_classdev_unregister(&sensor->accel_cdev);
-	sensors_classdev_unregister(&sensor->gyro_cdev);
 	remove_gyro_sysfs_interfaces(&sensor->gyro_dev->dev);
 	remove_accel_sysfs_interfaces(&sensor->accel_dev->dev);
 	destroy_workqueue(sensor->data_wq);

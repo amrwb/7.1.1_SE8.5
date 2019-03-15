@@ -2736,20 +2736,15 @@ static int apds993x_probe(struct i2c_client *client,
 	}
 	memset(&data->ps_cdev.cal_result, 0 , sizeof(data->ps_cdev.cal_result));
 
-	err = sensors_classdev_register(&data->input_dev_als->dev,
-			&data->als_cdev);
 	if (err) {
 		pr_err("%s: Unable to register to sensors class: %d\n",
 				__func__, err);
 		goto exit_unregister_als_ioctl;
 	}
 
-	err = sensors_classdev_register(&data->input_dev_ps->dev,
-			&data->ps_cdev);
 	if (err) {
 		pr_err("%s: Unable to register to sensors class: %d\n",
 			       __func__, err);
-		goto exit_unregister_als_class;
 	}
 
 	if (pdata->power_on)
@@ -2759,8 +2754,6 @@ static int apds993x_probe(struct i2c_client *client,
 
 	return 0;
 
-exit_unregister_als_class:
-	sensors_classdev_unregister(&data->als_cdev);
 exit_unregister_als_ioctl:
 	misc_deregister(&apds993x_als_device);
 exit_unregister_ps_ioctl:

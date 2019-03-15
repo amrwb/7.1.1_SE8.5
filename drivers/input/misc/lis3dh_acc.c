@@ -2392,7 +2392,6 @@ static int lis3dh_acc_probe(struct i2c_client *client,
 	acc->cdev.sensors_write_cal_params = lis3dh_write_cal_params;
 	memset(&acc->cdev.cal_result, 0, sizeof(acc->cdev.cal_result));
 	acc->cdev.params = acc->calibrate_buf;
-	err = sensors_classdev_register(&acc->input_dev->dev, &acc->cdev);
 	if (err) {
 		dev_err(&client->dev,
 			"class device create failed: %d\n", err);
@@ -2412,7 +2411,6 @@ static int lis3dh_acc_probe(struct i2c_client *client,
 		if (err < 0) {
 			dev_err(&client->dev,
 					"request irq1 failed: %d\n", err);
-			goto err_unreg_sensor_class;
 		}
 		disable_irq_nosync(acc->irq1);
 	}
@@ -2446,8 +2444,6 @@ static int lis3dh_acc_probe(struct i2c_client *client,
 err_free_irq1:
 if (gpio_is_valid(acc->pdata->gpio_int1) && acc->pdata->enable_int)
 	free_irq(acc->irq1, acc);
-err_unreg_sensor_class:
-	sensors_classdev_unregister(&acc->cdev);
 err_remove_sysfs_int:
 	remove_sysfs_interfaces(&client->dev);
 err_destroy_workqueue:
@@ -2481,7 +2477,6 @@ static int lis3dh_acc_remove(struct i2c_client *client)
 	if (gpio_is_valid(acc->pdata->gpio_int2) && acc->pdata->enable_int)
 		free_irq(acc->irq2, acc);
 
-	sensors_classdev_unregister(&acc->cdev);
 	lis3dh_acc_config_regulator(acc, false);
 	remove_sysfs_interfaces(&client->dev);
 	if (acc->data_wq)

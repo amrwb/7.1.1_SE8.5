@@ -690,7 +690,6 @@ static int mmc3416x_probe(struct i2c_client *client, const struct i2c_device_id 
 	memsic->cdev = sensors_cdev;
 	memsic->cdev.sensors_enable = mmc3416x_set_enable;
 	memsic->cdev.sensors_poll_delay = mmc3416x_set_poll_delay;
-	res = sensors_classdev_register(&memsic->idev->dev, &memsic->cdev);
 	if (res) {
 		dev_err(&client->dev, "sensors class register failed.\n");
 		goto out_register_classdev;
@@ -699,7 +698,6 @@ static int mmc3416x_probe(struct i2c_client *client, const struct i2c_device_id 
 	res = mmc3416x_power_set(memsic, false);
 	if (res) {
 		dev_err(&client->dev, "Power off failed\n");
-		goto out_power_set;
 	}
 
 	memsic->poll_interval = MMC3416X_DEFAULT_INTERVAL_MS;
@@ -708,8 +706,6 @@ static int mmc3416x_probe(struct i2c_client *client, const struct i2c_device_id 
 
 	return 0;
 
-out_power_set:
-	sensors_classdev_unregister(&memsic->cdev);
 out_register_classdev:
 	if (memsic->data_wq)
 		destroy_workqueue(memsic->data_wq);
@@ -726,7 +722,6 @@ static int mmc3416x_remove(struct i2c_client *client)
 {
 	struct mmc3416x_data *memsic = dev_get_drvdata(&client->dev);
 
-	sensors_classdev_unregister(&memsic->cdev);
 	if (memsic->data_wq)
 		destroy_workqueue(memsic->data_wq);
 	mmc3416x_power_deinit(memsic);
